@@ -1,0 +1,32 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  library:
+    name: Library
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: DeterminateSystems/nix-installer-action@v22
+
+      - name: Clippy
+        run: |
+          set -x
+          nix develop --command cargo clippy -- -Dwarnings
+
+      - name: Tests
+        run: |
+          set -x
+          nix develop --command cargo test
+
+      - name: Build
+        run: |
+          set -x
+          nix develop --command cargo build
