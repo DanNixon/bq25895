@@ -1,5 +1,35 @@
 use defmt::Format;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
+use nutype::nutype;
+
+macro_rules! integer_type {
+    ($name:ident, $min:expr, $max:expr, $step:expr) => {
+        #[nutype(
+            derive(Debug, Copy, Clone, PartialEq, Eq),
+            derive_unchecked(Format),
+            validate(
+                greater_or_equal = $min,
+                less_or_equal = $max,
+                predicate = |n| n.checked_sub($min).is_some_and(|n| n.is_multiple_of($step)),
+            ),
+        )]
+        pub struct $name(u32);
+
+        impl TryFrom<u8> for $name {
+            type Error = paste::paste! { [<$name Error>] };
+
+            fn try_from(value: u8) -> Result<Self, Self::Error> {
+                Self::try_new($min + ((value as u32) * $step))
+            }
+        }
+
+        impl From<$name> for u8 {
+            fn from(value: $name) -> Self {
+                ((value.into_inner() - $min) / $step).try_into().unwrap()
+            }
+        }
+    };
+}
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -15,74 +45,7 @@ pub enum IlimPin {
     Enabled = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum InputCurrentLimit {
-    _100mA = 0b000000,
-    _150mA = 0b000001,
-    _200mA = 0b000010,
-    _250mA = 0b000011,
-    _300mA = 0b000100,
-    _350mA = 0b000101,
-    _400mA = 0b000110,
-    _450mA = 0b000111,
-    _500mA = 0b001000,
-    _550mA = 0b001001,
-    _600mA = 0b001010,
-    _650mA = 0b001011,
-    _700mA = 0b001100,
-    _750mA = 0b001101,
-    _800mA = 0b001110,
-    _850mA = 0b001111,
-    _900mA = 0b010000,
-    _950mA = 0b010001,
-    _1000mA = 0b010010,
-    _1050mA = 0b010011,
-    _1100mA = 0b010100,
-    _1150mA = 0b010101,
-    _1200mA = 0b010110,
-    _1250mA = 0b010111,
-    _1300mA = 0b011000,
-    _1350mA = 0b011001,
-    _1400mA = 0b011010,
-    _1450mA = 0b011011,
-    _1500mA = 0b011100,
-    _1550mA = 0b011101,
-    _1600mA = 0b011110,
-    _1650mA = 0b011111,
-    _1700mA = 0b100000,
-    _1750mA = 0b100001,
-    _1800mA = 0b100010,
-    _1850mA = 0b100011,
-    _1900mA = 0b100100,
-    _1950mA = 0b100101,
-    _2000mA = 0b100110,
-    _2050mA = 0b100111,
-    _2100mA = 0b101000,
-    _2150mA = 0b101001,
-    _2200mA = 0b101010,
-    _2250mA = 0b101011,
-    _2300mA = 0b101100,
-    _2350mA = 0b101101,
-    _2400mA = 0b101110,
-    _2450mA = 0b101111,
-    _2500mA = 0b110000,
-    _2550mA = 0b110001,
-    _2600mA = 0b110010,
-    _2650mA = 0b110011,
-    _2700mA = 0b110100,
-    _2750mA = 0b110101,
-    _2800mA = 0b110110,
-    _2850mA = 0b110111,
-    _2900mA = 0b111000,
-    _2950mA = 0b111001,
-    _3000mA = 0b111010,
-    _3050mA = 0b111011,
-    _3100mA = 0b111100,
-    _3150mA = 0b111101,
-    _3200mA = 0b111110,
-    _3250mA = 0b111111,
-}
+integer_type!(InputCurrentLimit, 100, 3250, 50);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -106,42 +69,7 @@ pub enum BoostModeColdTemperatureThreshold {
     Vbcold1 = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum InputVoltageLimitOffset {
-    _0mV = 0b00000,
-    _100mV = 0b00001,
-    _200mV = 0b00010,
-    _300mV = 0b00011,
-    _400mV = 0b00100,
-    _500mV = 0b00101,
-    _600mV = 0b00110,
-    _700mV = 0b00111,
-    _800mV = 0b01000,
-    _900mV = 0b01001,
-    _1000mV = 0b01010,
-    _1100mV = 0b01011,
-    _1200mV = 0b01100,
-    _1300mV = 0b01101,
-    _1400mV = 0b01110,
-    _1500mV = 0b01111,
-    _1600mV = 0b10000,
-    _1700mV = 0b10001,
-    _1800mV = 0b10010,
-    _1900mV = 0b10011,
-    _2000mV = 0b10100,
-    _2100mV = 0b10101,
-    _2200mV = 0b10110,
-    _2300mV = 0b10111,
-    _2400mV = 0b11000,
-    _2500mV = 0b11001,
-    _2600mV = 0b11010,
-    _2700mV = 0b11011,
-    _2800mV = 0b11100,
-    _2900mV = 0b11101,
-    _3000mV = 0b11110,
-    _3100mV = 0b11111,
-}
+integer_type!(InputVoltageLimitOffset, 0, 3100, 100);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -220,18 +148,7 @@ pub enum ChargeEnable {
     Enabled = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum MinimumSystemVoltageLimit {
-    _3000mV = 0b000,
-    _3100mV = 0b001,
-    _3200mV = 0b010,
-    _3300mV = 0b011,
-    _3400mV = 0b100,
-    _3500mV = 0b101,
-    _3600mV = 0b110,
-    _3700mV = 0b111,
-}
+integer_type!(MinimumSystemVoltageLimit, 3000, 3700, 100);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -240,186 +157,13 @@ pub enum CurrentPulseControl {
     Enabled = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum FastChargeCurrentLimit {
-    _0mA = 0b0000000,
-    _64mA = 0b0000001,
-    _128mA = 0b0000010,
-    _192mA = 0b0000011,
-    _256mA = 0b0000100,
-    _320mA = 0b0000101,
-    _384mA = 0b0000110,
-    _448mA = 0b0000111,
-    _512mA = 0b0001000,
-    _576mA = 0b0001001,
-    _640mA = 0b0001010,
-    _704mA = 0b0001011,
-    _768mA = 0b0001100,
-    _832mA = 0b0001101,
-    _896mA = 0b0001110,
-    _960mA = 0b0001111,
-    _1024mA = 0b0010000,
-    _1088mA = 0b0010001,
-    _1152mA = 0b0010010,
-    _1216mA = 0b0010011,
-    _1280mA = 0b0010100,
-    _1344mA = 0b0010101,
-    _1408mA = 0b0010110,
-    _1472mA = 0b0010111,
-    _1536mA = 0b0011000,
-    _1600mA = 0b0011001,
-    _1664mA = 0b0011010,
-    _1728mA = 0b0011011,
-    _1792mA = 0b0011100,
-    _1856mA = 0b0011101,
-    _1920mA = 0b0011110,
-    _1948mA = 0b0011111,
-    _2048mA = 0b0100000,
-    _2112mA = 0b0100001,
-    _2176mA = 0b0100010,
-    _2240mA = 0b0100011,
-    _2304mA = 0b0100100,
-    _2368mA = 0b0100101,
-    _2432mA = 0b0100110,
-    _2496mA = 0b0100111,
-    _2560mA = 0b0101000,
-    _2624mA = 0b0101001,
-    _2688mA = 0b0101010,
-    _2752mA = 0b0101011,
-    _2816mA = 0b0101100,
-    _2880mA = 0b0101101,
-    _2944mA = 0b0101110,
-    _3008mA = 0b0101111,
-    _3072mA = 0b0110000,
-    _3136mA = 0b0110001,
-    _3200mA = 0b0110010,
-    _3264mA = 0b0110011,
-    _3328mA = 0b0110100,
-    _3392mA = 0b0110101,
-    _3456mA = 0b0110110,
-    _3520mA = 0b0110111,
-    _3584mA = 0b0111000,
-    _3648mA = 0b0111001,
-    _3712mA = 0b0111010,
-    _3776mA = 0b0111011,
-    _3840mA = 0b0111100,
-    _3904mA = 0b0111101,
-    _3968mA = 0b0111110,
-    _4032mA = 0b0111111,
-    _4096mA = 0b1000000,
-    _4160mA = 0b1000001,
-    _4224mA = 0b1000010,
-    _4288mA = 0b1000011,
-    _4352mA = 0b1000100,
-    _4416mA = 0b1000101,
-    _4480mA = 0b1000110,
-    _4544mA = 0b1000111,
-    _4608mA = 0b1001000,
-    _4672mA = 0b1001001,
-    _4736mA = 0b1001010,
-    _4800mA = 0b1001011,
-    _4864mA = 0b1001100,
-    _4928mA = 0b1001101,
-    _4992mA = 0b1001110,
-    _5056mA = 0b1001111,
-}
+integer_type!(FastChargeCurrentLimit, 0, 5056, 64);
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum PrechargeCurrentLimit {
-    _64mA = 0b0000,
-    _128mA = 0b0001,
-    _192mA = 0b0010,
-    _256mA = 0b0011,
-    _320mA = 0b0100,
-    _384mA = 0b0101,
-    _448mA = 0b0110,
-    _512mA = 0b0111,
-    _576mA = 0b1000,
-    _640mA = 0b1001,
-    _704mA = 0b1010,
-    _768mA = 0b1011,
-    _832mA = 0b1100,
-    _896mA = 0b1101,
-    _960mA = 0b1110,
-    _1024mA = 0b1111,
-}
+integer_type!(PrechargeCurrentLimit, 64, 1024, 64);
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum TerminationCurrentLimit {
-    _64mA = 0b0000,
-    _128mA = 0b0001,
-    _192mA = 0b0010,
-    _256mA = 0b0011,
-    _320mA = 0b0100,
-    _384mA = 0b0101,
-    _448mA = 0b0110,
-    _512mA = 0b0111,
-    _576mA = 0b1000,
-    _640mA = 0b1001,
-    _704mA = 0b1010,
-    _768mA = 0b1011,
-    _832mA = 0b1100,
-    _896mA = 0b1101,
-    _960mA = 0b1110,
-    _1024mA = 0b1111,
-}
+integer_type!(TerminationCurrentLimit, 64, 1024, 64);
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum ChargeVoltageLimit {
-    _3840mV = 0b000000,
-    _3856mV = 0b000001,
-    _3872mV = 0b000010,
-    _3888mV = 0b000011,
-    _3904mV = 0b000100,
-    _3920mV = 0b000101,
-    _3936mV = 0b000110,
-    _3952mV = 0b000111,
-    _3968mV = 0b001000,
-    _3984mV = 0b001001,
-    _4000mV = 0b001010,
-    _4016mV = 0b001011,
-    _4032mV = 0b001100,
-    _4048mV = 0b001101,
-    _4064mV = 0b001110,
-    _4080mV = 0b001111,
-    _4096mV = 0b010000,
-    _4112mV = 0b010001,
-    _4128mV = 0b010010,
-    _4144mV = 0b010011,
-    _4160mV = 0b010100,
-    _4176mV = 0b010101,
-    _4192mV = 0b010110,
-    _4208mV = 0b010111,
-    _4224mV = 0b011000,
-    _4240mV = 0b011001,
-    _4256mV = 0b011010,
-    _4272mV = 0b011011,
-    _4288mV = 0b011100,
-    _4304mV = 0b011101,
-    _4320mV = 0b011110,
-    _4336mV = 0b011111,
-    _4352mV = 0b100000,
-    _4368mV = 0b100001,
-    _4384mV = 0b100010,
-    _4400mV = 0b100011,
-    _4416mV = 0b100100,
-    _4432mV = 0b100101,
-    _4448mV = 0b100110,
-    _4464mV = 0b100111,
-    _4480mV = 0b101000,
-    _4496mV = 0b101001,
-    _4512mV = 0b101010,
-    _4528mV = 0b101011,
-    _4544mV = 0b101100,
-    _4560mV = 0b101101,
-    _4576mV = 0b101110,
-    _4592mV = 0b101111,
-    _4608mV = 0b110000,
-}
+integer_type!(ChargeVoltageLimit, 3840, 4608, 16);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -487,18 +231,7 @@ pub enum IRCompensationResistor {
     _140mOhm = 0b111,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum IRCompensationVoltageClamp {
-    _0mV = 0b000,
-    _32mV = 0b001,
-    _64mV = 0b010,
-    _96mV = 0b011,
-    _128mV = 0b100,
-    _160mV = 0b101,
-    _192mV = 0b110,
-    _224mV = 0b111,
-}
+integer_type!(IRCompensationVoltageClamp, 0, 224, 32);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -553,26 +286,7 @@ pub enum CurrentPulseControlVoltageDown {
     Enable = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum BoostModeVoltage {
-    _4550mV = 0b0000,
-    _4614mV = 0b0001,
-    _4678mV = 0b0010,
-    _4742mV = 0b0011,
-    _4806mV = 0b0100,
-    _4870mV = 0b0101,
-    _4934mV = 0b0110,
-    _4998mV = 0b0111,
-    _5062mV = 0b1000,
-    _5126mV = 0b1001,
-    _5190mV = 0b1010,
-    _5254mV = 0b1011,
-    _5318mV = 0b1100,
-    _5382mV = 0b1101,
-    _5446mV = 0b1110,
-    _5510mV = 0b1111,
-}
+integer_type!(BoostModeVoltage, 4550, 5510, 64);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -671,124 +385,141 @@ pub enum VinDpmThresholdType {
     Absolute = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum VinDpmAbsoluteThreshold {
-    _3900mV = 0b0001101,
-    _4000mV = 0b0001110,
-    _4100mV = 0b0001111,
-    _4200mV = 0b0010000,
-    _4300mV = 0b0010001,
-    _4400mV = 0b0010010,
-    _4500mV = 0b0010011,
-    _4600mV = 0b0010100,
-    _4700mV = 0b0010101,
-    _4800mV = 0b0010110,
-    _4900mV = 0b0010111,
-    _5000mV = 0b0011000,
-    _5100mV = 0b0011001,
-    _5200mV = 0b0011010,
-    _5300mV = 0b0011011,
-    _5400mV = 0b0011100,
-    _5500mV = 0b0011101,
-    _5600mV = 0b0011110,
-    _5700mV = 0b0011111,
-    _5800mV = 0b0100000,
-    _5900mV = 0b0100001,
-    _6000mV = 0b0100010,
-    _6100mV = 0b0100011,
-    _6200mV = 0b0100100,
-    _6300mV = 0b0100101,
-    _6400mV = 0b0100110,
-    _6500mV = 0b0100111,
-    _6600mV = 0b0101000,
-    _6700mV = 0b0101001,
-    _6800mV = 0b0101010,
-    _6900mV = 0b0101011,
-    _7000mV = 0b0101100,
-    _7100mV = 0b0101101,
-    _7200mV = 0b0101110,
-    _7300mV = 0b0101111,
-    _7400mV = 0b0110000,
-    _7500mV = 0b0110001,
-    _7600mV = 0b0110010,
-    _7700mV = 0b0110011,
-    _7800mV = 0b0110100,
-    _7900mV = 0b0110101,
-    _8000mV = 0b0110110,
-    _8100mV = 0b0110111,
-    _8200mV = 0b0111000,
-    _8300mV = 0b0111001,
-    _8400mV = 0b0111010,
-    _8500mV = 0b0111011,
-    _8600mV = 0b0111100,
-    _8700mV = 0b0111101,
-    _8800mV = 0b0111110,
-    _8900mV = 0b0111111,
-    _9000mV = 0b1000000,
-    _9100mV = 0b1000001,
-    _9200mV = 0b1000010,
-    _9300mV = 0b1000011,
-    _9400mV = 0b1000100,
-    _9500mV = 0b1000101,
-    _9600mV = 0b1000110,
-    _9700mV = 0b1000111,
-    _9800mV = 0b1001000,
-    _9900mV = 0b1001001,
-    _10000mV = 0b1001010,
-    _10100mV = 0b1001011,
-    _10200mV = 0b1001100,
-    _10300mV = 0b1001101,
-    _10400mV = 0b1001110,
-    _10500mV = 0b1001111,
-    _10600mV = 0b1010000,
-    _10700mV = 0b1010001,
-    _10800mV = 0b1010010,
-    _10900mV = 0b1010011,
-    _11000mV = 0b1010100,
-    _11100mV = 0b1010101,
-    _11200mV = 0b1010110,
-    _11300mV = 0b1010111,
-    _11400mV = 0b1011000,
-    _11500mV = 0b1011001,
-    _11600mV = 0b1011010,
-    _11700mV = 0b1011011,
-    _11800mV = 0b1011100,
-    _11900mV = 0b1011101,
-    _12000mV = 0b1011110,
-    _12100mV = 0b1011111,
-    _12200mV = 0b1100000,
-    _12300mV = 0b1100001,
-    _12400mV = 0b1100010,
-    _12500mV = 0b1100011,
-    _12600mV = 0b1100100,
-    _12700mV = 0b1100101,
-    _12800mV = 0b1100110,
-    _12900mV = 0b1100111,
-    _13000mV = 0b1101000,
-    _13100mV = 0b1101001,
-    _13200mV = 0b1101010,
-    _13300mV = 0b1101011,
-    _13400mV = 0b1101100,
-    _13500mV = 0b1101101,
-    _13600mV = 0b1101110,
-    _13700mV = 0b1101111,
-    _13800mV = 0b1110000,
-    _13900mV = 0b1110001,
-    _14000mV = 0b1110010,
-    _14100mV = 0b1110011,
-    _14200mV = 0b1110100,
-    _14300mV = 0b1110101,
-    _14400mV = 0b1110110,
-    _14500mV = 0b1110111,
-    _14600mV = 0b1111000,
-    _14700mV = 0b1111001,
-    _14800mV = 0b1111010,
-    _14900mV = 0b1111011,
-    _15000mV = 0b1111100,
-    _15100mV = 0b1111101,
-    _15200mV = 0b1111110,
-    _15300mV = 0b1111111,
+#[nutype(
+    derive(Debug, Copy, Clone, PartialEq, Eq),
+    derive_unchecked(Format),
+    validate(
+        greater_or_equal = 3900,
+        less_or_equal = 15300,
+        predicate = |n| n.checked_sub(3900).is_some_and(|n| n.is_multiple_of(100)),
+    ),
+)]
+pub struct VinDpmAbsoluteThreshold(u32);
+
+impl TryFrom<u8> for VinDpmAbsoluteThreshold {
+    type Error = VinDpmAbsoluteThresholdError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        let value = (value as u32)
+            .checked_sub(0b0001101)
+            .ok_or(VinDpmAbsoluteThresholdError::PredicateViolated)?;
+        Self::try_new(3900 + (value * 100))
+    }
+}
+
+impl From<VinDpmAbsoluteThreshold> for u8 {
+    fn from(value: VinDpmAbsoluteThreshold) -> Self {
+        let value: u8 = ((value.into_inner() - 3900) / 100).try_into().unwrap();
+        value + 0b0001101
+    }
+}
+
+#[cfg(test)]
+mod vin_dpm_absolute_threshold_tests {
+    use super::VinDpmAbsoluteThreshold;
+
+    // Raw register offset for the minimum voltage (3900 mV).
+    const RAW_MIN: u8 = 0b0001101;
+
+    #[test]
+    fn try_new_minimum() {
+        assert!(VinDpmAbsoluteThreshold::try_new(3900).is_ok());
+    }
+
+    #[test]
+    fn try_new_maximum() {
+        assert!(VinDpmAbsoluteThreshold::try_new(15300).is_ok());
+    }
+
+    #[test]
+    fn try_new_mid_range() {
+        assert!(VinDpmAbsoluteThreshold::try_new(4800).is_ok());
+    }
+
+    #[test]
+    fn try_new_below_minimum_rejected() {
+        assert!(VinDpmAbsoluteThreshold::try_new(3899).is_err());
+    }
+
+    #[test]
+    fn try_new_above_maximum_rejected() {
+        assert!(VinDpmAbsoluteThreshold::try_new(15301).is_err());
+    }
+
+    #[test]
+    fn try_new_non_multiple_of_100_rejected() {
+        // 3950 is in range but not a 100 mV step above 3900.
+        assert!(VinDpmAbsoluteThreshold::try_new(3950).is_err());
+    }
+
+    #[test]
+    fn try_from_u8_minimum_raw() {
+        let threshold = VinDpmAbsoluteThreshold::try_from(RAW_MIN).unwrap();
+        assert_eq!(threshold.into_inner(), 3900);
+    }
+
+    #[test]
+    fn try_from_u8_one_step_above_minimum() {
+        let threshold = VinDpmAbsoluteThreshold::try_from(RAW_MIN + 1).unwrap();
+        assert_eq!(threshold.into_inner(), 4000);
+    }
+
+    #[test]
+    fn try_from_u8_maximum_raw() {
+        // (15300 - 3900) / 100 + 13 = 127
+        let threshold = VinDpmAbsoluteThreshold::try_from(127).unwrap();
+        assert_eq!(threshold.into_inner(), 15300);
+    }
+
+    #[test]
+    fn try_from_u8_below_offset_rejected() {
+        // Any raw value below 13 underflows the offset subtraction.
+        assert!(VinDpmAbsoluteThreshold::try_from(RAW_MIN - 1).is_err());
+        assert!(VinDpmAbsoluteThreshold::try_from(0).is_err());
+    }
+
+    #[test]
+    fn try_from_u8_above_maximum_raw_rejected() {
+        // Raw 128 would decode to 15400 mV, which exceeds 15300 mV.
+        assert!(VinDpmAbsoluteThreshold::try_from(128).is_err());
+    }
+
+    #[test]
+    fn into_u8_minimum() {
+        let threshold = VinDpmAbsoluteThreshold::try_new(3900).unwrap();
+        assert_eq!(u8::from(threshold), RAW_MIN);
+    }
+
+    #[test]
+    fn into_u8_maximum() {
+        let threshold = VinDpmAbsoluteThreshold::try_new(15300).unwrap();
+        assert_eq!(u8::from(threshold), 127);
+    }
+
+    #[test]
+    fn into_u8_mid_range() {
+        let threshold = VinDpmAbsoluteThreshold::try_new(4800).unwrap();
+        // (4800 - 3900) / 100 + 13 = 9 + 13 = 22
+        assert_eq!(u8::from(threshold), 22);
+    }
+
+    #[test]
+    fn roundtrip_raw_to_threshold_to_raw() {
+        for raw in RAW_MIN..=127 {
+            let threshold = VinDpmAbsoluteThreshold::try_from(raw).unwrap();
+            assert_eq!(u8::from(threshold), raw);
+        }
+    }
+
+    #[test]
+    fn roundtrip_threshold_to_raw_to_threshold() {
+        for mv in (3900u32..=15300).step_by(100) {
+            let threshold = VinDpmAbsoluteThreshold::try_new(mv).unwrap();
+            let raw = u8::from(threshold);
+            let recovered = VinDpmAbsoluteThreshold::try_from(raw).unwrap();
+            assert_eq!(threshold, recovered);
+        }
+    }
 }
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
@@ -798,404 +529,122 @@ pub enum ThermalRegulationStatus {
     Active = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum BatteryVoltage {
-    _2304mV = 0b0000000,
-    _2324mV = 0b0000001,
-    _2344mV = 0b0000010,
-    _2364mV = 0b0000011,
-    _2384mV = 0b0000100,
-    _2404mV = 0b0000101,
-    _2424mV = 0b0000110,
-    _2444mV = 0b0000111,
-    _2464mV = 0b0001000,
-    _2484mV = 0b0001001,
-    _2504mV = 0b0001010,
-    _2524mV = 0b0001011,
-    _2544mV = 0b0001100,
-    _2564mV = 0b0001101,
-    _2584mV = 0b0001110,
-    _2604mV = 0b0001111,
-    _2624mV = 0b0010000,
-    _2644mV = 0b0010001,
-    _2664mV = 0b0010010,
-    _2684mV = 0b0010011,
-    _2704mV = 0b0010100,
-    _2724mV = 0b0010101,
-    _2744mV = 0b0010110,
-    _2764mV = 0b0010111,
-    _2784mV = 0b0011000,
-    _2804mV = 0b0011001,
-    _2824mV = 0b0011010,
-    _2844mV = 0b0011011,
-    _2864mV = 0b0011100,
-    _2884mV = 0b0011101,
-    _2904mV = 0b0011110,
-    _2924mV = 0b0011111,
-    _2944mV = 0b0100000,
-    _2964mV = 0b0100001,
-    _2984mV = 0b0100010,
-    _3004mV = 0b0100011,
-    _3024mV = 0b0100100,
-    _3044mV = 0b0100101,
-    _3064mV = 0b0100110,
-    _3084mV = 0b0100111,
-    _3104mV = 0b0101000,
-    _3124mV = 0b0101001,
-    _3144mV = 0b0101010,
-    _3164mV = 0b0101011,
-    _3184mV = 0b0101100,
-    _3204mV = 0b0101101,
-    _3224mV = 0b0101110,
-    _3244mV = 0b0101111,
-    _3264mV = 0b0110000,
-    _3284mV = 0b0110001,
-    _3304mV = 0b0110010,
-    _3324mV = 0b0110011,
-    _3344mV = 0b0110100,
-    _3364mV = 0b0110101,
-    _3384mV = 0b0110110,
-    _3404mV = 0b0110111,
-    _3424mV = 0b0111000,
-    _3444mV = 0b0111001,
-    _3464mV = 0b0111010,
-    _3484mV = 0b0111011,
-    _3504mV = 0b0111100,
-    _3524mV = 0b0111101,
-    _3544mV = 0b0111110,
-    _3564mV = 0b0111111,
-    _3584mV = 0b1000000,
-    _3604mV = 0b1000001,
-    _3624mV = 0b1000010,
-    _3644mV = 0b1000011,
-    _3664mV = 0b1000100,
-    _3684mV = 0b1000101,
-    _3704mV = 0b1000110,
-    _3724mV = 0b1000111,
-    _3744mV = 0b1001000,
-    _3764mV = 0b1001001,
-    _3784mV = 0b1001010,
-    _3804mV = 0b1001011,
-    _3824mV = 0b1001100,
-    _3844mV = 0b1001101,
-    _3864mV = 0b1001110,
-    _3884mV = 0b1001111,
-    _3904mV = 0b1010000,
-    _3924mV = 0b1010001,
-    _3944mV = 0b1010010,
-    _3964mV = 0b1010011,
-    _3984mV = 0b1010100,
-    _4004mV = 0b1010101,
-    _4024mV = 0b1010110,
-    _4044mV = 0b1010111,
-    _4064mV = 0b1011000,
-    _4084mV = 0b1011001,
-    _4104mV = 0b1011010,
-    _4124mV = 0b1011011,
-    _4144mV = 0b1011100,
-    _4164mV = 0b1011101,
-    _4184mV = 0b1011110,
-    _4204mV = 0b1011111,
-    _4224mV = 0b1100000,
-    _4244mV = 0b1100001,
-    _4264mV = 0b1100010,
-    _4284mV = 0b1100011,
-    _4304mV = 0b1100100,
-    _4324mV = 0b1100101,
-    _4344mV = 0b1100110,
-    _4364mV = 0b1100111,
-    _4384mV = 0b1101000,
-    _4404mV = 0b1101001,
-    _4424mV = 0b1101010,
-    _4444mV = 0b1101011,
-    _4464mV = 0b1101100,
-    _4484mV = 0b1101101,
-    _4504mV = 0b1101110,
-    _4524mV = 0b1101111,
-    _4544mV = 0b1110000,
-    _4564mV = 0b1110001,
-    _4584mV = 0b1110010,
-    _4604mV = 0b1110011,
-    _4624mV = 0b1110100,
-    _4644mV = 0b1110101,
-    _4664mV = 0b1110110,
-    _4684mV = 0b1110111,
-    _4704mV = 0b1111000,
-    _4724mV = 0b1111001,
-    _4744mV = 0b1111010,
-    _4764mV = 0b1111011,
-    _4784mV = 0b1111100,
-    _4804mV = 0b1111101,
-    _4824mV = 0b1111110,
-    _4848mV = 0b1111111,
+integer_type!(BatteryVoltage, 2304, 4844, 20);
+
+#[cfg(test)]
+mod battery_voltage_tests {
+    use super::BatteryVoltage;
+
+    #[test]
+    fn try_new_minimum() {
+        assert!(BatteryVoltage::try_new(2304).is_ok());
+    }
+
+    #[test]
+    fn try_new_one_step_above_minimum() {
+        assert!(BatteryVoltage::try_new(2324).is_ok());
+    }
+
+    #[test]
+    fn try_new_practical_maximum() {
+        // Highest value reachable in 20 mV steps from 2304.
+        assert!(BatteryVoltage::try_new(4844).is_ok());
+    }
+
+    #[test]
+    fn try_new_below_minimum_rejected() {
+        assert!(BatteryVoltage::try_new(2303).is_err());
+    }
+
+    #[test]
+    fn try_new_above_nutype_bound_rejected() {
+        assert!(BatteryVoltage::try_new(4849).is_err());
+    }
+
+    #[test]
+    fn try_new_non_multiple_of_step_rejected() {
+        // 2310 is in range but (2310-2304)=6 is not a multiple of 20.
+        assert!(BatteryVoltage::try_new(2310).is_err());
+    }
+
+    #[test]
+    fn try_from_u8_zero_raw() {
+        let v = BatteryVoltage::try_from(0u8).unwrap();
+        assert_eq!(v.into_inner(), 2304);
+    }
+
+    #[test]
+    fn try_from_u8_one_raw() {
+        let v = BatteryVoltage::try_from(1u8).unwrap();
+        assert_eq!(v.into_inner(), 2324);
+    }
+
+    #[test]
+    fn try_from_u8_maximum_raw() {
+        // 2304 + 127*20 = 4844
+        let v = BatteryVoltage::try_from(127u8).unwrap();
+        assert_eq!(v.into_inner(), 4844);
+    }
+
+    #[test]
+    fn try_from_u8_above_maximum_raw_rejected() {
+        // 2304 + 128*20 = 4864 > 4848
+        assert!(BatteryVoltage::try_from(128u8).is_err());
+    }
+
+    #[test]
+    fn into_u8_minimum() {
+        let v = BatteryVoltage::try_new(2304).unwrap();
+        assert_eq!(u8::from(v), 0);
+    }
+
+    #[test]
+    fn into_u8_one_step() {
+        let v = BatteryVoltage::try_new(2324).unwrap();
+        assert_eq!(u8::from(v), 1);
+    }
+
+    #[test]
+    fn into_u8_practical_maximum() {
+        let v = BatteryVoltage::try_new(4844).unwrap();
+        assert_eq!(u8::from(v), 127);
+    }
+
+    #[test]
+    fn roundtrip_raw_to_voltage_to_raw() {
+        for raw in 0u8..=127 {
+            let v = BatteryVoltage::try_from(raw).unwrap();
+            assert_eq!(u8::from(v), raw);
+        }
+    }
+
+    #[test]
+    fn roundtrip_voltage_to_raw_to_voltage() {
+        for mv in (2304u32..=4844).step_by(20) {
+            let v = BatteryVoltage::try_new(mv).unwrap();
+            let raw = u8::from(v);
+            let recovered = BatteryVoltage::try_from(raw).unwrap();
+            assert_eq!(v, recovered);
+        }
+    }
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum SystemVoltage {
-    _2304mV = 0b0000000,
-    _2324mV = 0b0000001,
-    _2344mV = 0b0000010,
-    _2364mV = 0b0000011,
-    _2384mV = 0b0000100,
-    _2404mV = 0b0000101,
-    _2424mV = 0b0000110,
-    _2444mV = 0b0000111,
-    _2464mV = 0b0001000,
-    _2484mV = 0b0001001,
-    _2504mV = 0b0001010,
-    _2524mV = 0b0001011,
-    _2544mV = 0b0001100,
-    _2564mV = 0b0001101,
-    _2584mV = 0b0001110,
-    _2604mV = 0b0001111,
-    _2624mV = 0b0010000,
-    _2644mV = 0b0010001,
-    _2664mV = 0b0010010,
-    _2684mV = 0b0010011,
-    _2704mV = 0b0010100,
-    _2724mV = 0b0010101,
-    _2744mV = 0b0010110,
-    _2764mV = 0b0010111,
-    _2784mV = 0b0011000,
-    _2804mV = 0b0011001,
-    _2824mV = 0b0011010,
-    _2844mV = 0b0011011,
-    _2864mV = 0b0011100,
-    _2884mV = 0b0011101,
-    _2904mV = 0b0011110,
-    _2924mV = 0b0011111,
-    _2944mV = 0b0100000,
-    _2964mV = 0b0100001,
-    _2984mV = 0b0100010,
-    _3004mV = 0b0100011,
-    _3024mV = 0b0100100,
-    _3044mV = 0b0100101,
-    _3064mV = 0b0100110,
-    _3084mV = 0b0100111,
-    _3104mV = 0b0101000,
-    _3124mV = 0b0101001,
-    _3144mV = 0b0101010,
-    _3164mV = 0b0101011,
-    _3184mV = 0b0101100,
-    _3204mV = 0b0101101,
-    _3224mV = 0b0101110,
-    _3244mV = 0b0101111,
-    _3264mV = 0b0110000,
-    _3284mV = 0b0110001,
-    _3304mV = 0b0110010,
-    _3324mV = 0b0110011,
-    _3344mV = 0b0110100,
-    _3364mV = 0b0110101,
-    _3384mV = 0b0110110,
-    _3404mV = 0b0110111,
-    _3424mV = 0b0111000,
-    _3444mV = 0b0111001,
-    _3464mV = 0b0111010,
-    _3484mV = 0b0111011,
-    _3504mV = 0b0111100,
-    _3524mV = 0b0111101,
-    _3544mV = 0b0111110,
-    _3564mV = 0b0111111,
-    _3584mV = 0b1000000,
-    _3604mV = 0b1000001,
-    _3624mV = 0b1000010,
-    _3644mV = 0b1000011,
-    _3664mV = 0b1000100,
-    _3684mV = 0b1000101,
-    _3704mV = 0b1000110,
-    _3724mV = 0b1000111,
-    _3744mV = 0b1001000,
-    _3764mV = 0b1001001,
-    _3784mV = 0b1001010,
-    _3804mV = 0b1001011,
-    _3824mV = 0b1001100,
-    _3844mV = 0b1001101,
-    _3864mV = 0b1001110,
-    _3884mV = 0b1001111,
-    _3904mV = 0b1010000,
-    _3924mV = 0b1010001,
-    _3944mV = 0b1010010,
-    _3964mV = 0b1010011,
-    _3984mV = 0b1010100,
-    _4004mV = 0b1010101,
-    _4024mV = 0b1010110,
-    _4044mV = 0b1010111,
-    _4064mV = 0b1011000,
-    _4084mV = 0b1011001,
-    _4104mV = 0b1011010,
-    _4124mV = 0b1011011,
-    _4144mV = 0b1011100,
-    _4164mV = 0b1011101,
-    _4184mV = 0b1011110,
-    _4204mV = 0b1011111,
-    _4224mV = 0b1100000,
-    _4244mV = 0b1100001,
-    _4264mV = 0b1100010,
-    _4284mV = 0b1100011,
-    _4304mV = 0b1100100,
-    _4324mV = 0b1100101,
-    _4344mV = 0b1100110,
-    _4364mV = 0b1100111,
-    _4384mV = 0b1101000,
-    _4404mV = 0b1101001,
-    _4424mV = 0b1101010,
-    _4444mV = 0b1101011,
-    _4464mV = 0b1101100,
-    _4484mV = 0b1101101,
-    _4504mV = 0b1101110,
-    _4524mV = 0b1101111,
-    _4544mV = 0b1110000,
-    _4564mV = 0b1110001,
-    _4584mV = 0b1110010,
-    _4604mV = 0b1110011,
-    _4624mV = 0b1110100,
-    _4644mV = 0b1110101,
-    _4664mV = 0b1110110,
-    _4684mV = 0b1110111,
-    _4704mV = 0b1111000,
-    _4724mV = 0b1111001,
-    _4744mV = 0b1111010,
-    _4764mV = 0b1111011,
-    _4784mV = 0b1111100,
-    _4804mV = 0b1111101,
-    _4824mV = 0b1111110,
-    _4848mV = 0b1111111,
-}
+integer_type!(SystemVoltage, 2304, 4848, 20);
 
 /// TS voltage as a percentage of REGN
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum TsVoltagePct {
-    _21 = 0b0000000,
-    _21_465 = 0b0000001,
-    _21_93 = 0b0000010,
-    _22_395 = 0b0000011,
-    _22_86 = 0b0000100,
-    _23_325 = 0b0000101,
-    _23_79 = 0b0000110,
-    _24_255 = 0b0000111,
-    _24_72 = 0b0001000,
-    _25_185 = 0b0001001,
-    _25_65 = 0b0001010,
-    _26_115 = 0b0001011,
-    _26_58 = 0b0001100,
-    _27_045 = 0b0001101,
-    _27_51 = 0b0001110,
-    _27_975 = 0b0001111,
-    _28_44 = 0b0010000,
-    _28_905 = 0b0010001,
-    _29_37 = 0b0010010,
-    _29_835 = 0b0010011,
-    _30_3 = 0b0010100,
-    _30_765 = 0b0010101,
-    _31_23 = 0b0010110,
-    _31_695 = 0b0010111,
-    _32_16 = 0b0011000,
-    _32_625 = 0b0011001,
-    _33_09 = 0b0011010,
-    _33_555 = 0b0011011,
-    _34_02 = 0b0011100,
-    _34_485 = 0b0011101,
-    _34_95 = 0b0011110,
-    _35_415 = 0b0011111,
-    _35_88 = 0b0100000,
-    _36_345 = 0b0100001,
-    _36_81 = 0b0100010,
-    _37_275 = 0b0100011,
-    _37_74 = 0b0100100,
-    _38_205 = 0b0100101,
-    _38_67 = 0b0100110,
-    _39_135 = 0b0100111,
-    _39_6 = 0b0101000,
-    _40_065 = 0b0101001,
-    _40_53 = 0b0101010,
-    _40_995 = 0b0101011,
-    _41_46 = 0b0101100,
-    _41_925 = 0b0101101,
-    _42_39 = 0b0101110,
-    _42_855 = 0b0101111,
-    _43_32 = 0b0110000,
-    _43_785 = 0b0110001,
-    _44_25 = 0b0110010,
-    _44_715 = 0b0110011,
-    _45_18 = 0b0110100,
-    _45_645 = 0b0110101,
-    _46_11 = 0b0110110,
-    _46_575 = 0b0110111,
-    _47_04 = 0b0111000,
-    _47_505 = 0b0111001,
-    _47_97 = 0b0111010,
-    _48_435 = 0b0111011,
-    _48_9 = 0b0111100,
-    _49_365 = 0b0111101,
-    _49_83 = 0b0111110,
-    _50_295 = 0b0111111,
-    _50_76 = 0b1000000,
-    _51_225 = 0b1000001,
-    _51_69 = 0b1000010,
-    _52_155 = 0b1000011,
-    _52_62 = 0b1000100,
-    _53_085 = 0b1000101,
-    _53_55 = 0b1000110,
-    _54_015 = 0b1000111,
-    _54_48 = 0b1001000,
-    _54_945 = 0b1001001,
-    _55_41 = 0b1001010,
-    _55_875 = 0b1001011,
-    _56_34 = 0b1001100,
-    _56_805 = 0b1001101,
-    _57_27 = 0b1001110,
-    _57_735 = 0b1001111,
-    _58_2 = 0b1010000,
-    _58_665 = 0b1010001,
-    _59_13 = 0b1010010,
-    _59_595 = 0b1010011,
-    _60_06 = 0b1010100,
-    _60_525 = 0b1010101,
-    _60_99 = 0b1010110,
-    _61_455 = 0b1010111,
-    _61_92 = 0b1011000,
-    _62_385 = 0b1011001,
-    _62_85 = 0b1011010,
-    _63_315 = 0b1011011,
-    _63_78 = 0b1011100,
-    _64_245 = 0b1011101,
-    _64_71 = 0b1011110,
-    _65_175 = 0b1011111,
-    _65_64 = 0b1100000,
-    _66_105 = 0b1100001,
-    _66_57 = 0b1100010,
-    _67_035 = 0b1100011,
-    _67_5 = 0b1100100,
-    _67_965 = 0b1100101,
-    _68_43 = 0b1100110,
-    _68_895 = 0b1100111,
-    _69_36 = 0b1101000,
-    _69_825 = 0b1101001,
-    _70_29 = 0b1101010,
-    _70_755 = 0b1101011,
-    _71_22 = 0b1101100,
-    _71_685 = 0b1101101,
-    _72_15 = 0b1101110,
-    _72_615 = 0b1101111,
-    _73_08 = 0b1110000,
-    _73_545 = 0b1110001,
-    _74_01 = 0b1110010,
-    _74_475 = 0b1110011,
-    _74_94 = 0b1110100,
-    _75_405 = 0b1110101,
-    _75_87 = 0b1110110,
-    _76_335 = 0b1110111,
-    _76_8 = 0b1111000,
-    _77_265 = 0b1111001,
-    _77_73 = 0b1111010,
-    _78_195 = 0b1111011,
-    _78_66 = 0b1111100,
-    _79_125 = 0b1111101,
-    _80_055 = 0b1111110,
-    _80_52 = 0b1111111,
+#[nutype(
+    derive(Debug, Copy, Clone, PartialEq),
+    derive_unchecked(Format),
+    validate(greater_or_equal = 21, less_or_equal = 81)
+)]
+pub struct TsVoltagePct(f32);
+
+impl TryFrom<u8> for TsVoltagePct {
+    type Error = TsVoltagePctError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Self::try_new(21.0 + ((value as f32) * 0.465))
+    }
 }
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
@@ -1205,271 +654,9 @@ pub enum VbusGood {
     Good = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum VbusVoltage {
-    _2600mV = 0b0000000,
-    _2700mV = 0b0000001,
-    _2800mV = 0b0000010,
-    _2900mV = 0b0000011,
-    _3000mV = 0b0000100,
-    _3100mV = 0b0000101,
-    _3200mV = 0b0000110,
-    _3300mV = 0b0000111,
-    _3400mV = 0b0001000,
-    _3500mV = 0b0001001,
-    _3600mV = 0b0001010,
-    _3700mV = 0b0001011,
-    _3800mV = 0b0001100,
-    _3900mV = 0b0001101,
-    _4000mV = 0b0001110,
-    _4100mV = 0b0001111,
-    _4200mV = 0b0010000,
-    _4300mV = 0b0010001,
-    _4400mV = 0b0010010,
-    _4500mV = 0b0010011,
-    _4600mV = 0b0010100,
-    _4700mV = 0b0010101,
-    _4800mV = 0b0010110,
-    _4900mV = 0b0010111,
-    _5000mV = 0b0011000,
-    _5100mV = 0b0011001,
-    _5200mV = 0b0011010,
-    _5300mV = 0b0011011,
-    _5400mV = 0b0011100,
-    _5500mV = 0b0011101,
-    _5600mV = 0b0011110,
-    _5700mV = 0b0011111,
-    _5800mV = 0b0100000,
-    _5900mV = 0b0100001,
-    _6000mV = 0b0100010,
-    _6100mV = 0b0100011,
-    _6200mV = 0b0100100,
-    _6300mV = 0b0100101,
-    _6400mV = 0b0100110,
-    _6500mV = 0b0100111,
-    _6600mV = 0b0101000,
-    _6700mV = 0b0101001,
-    _6800mV = 0b0101010,
-    _6900mV = 0b0101011,
-    _7000mV = 0b0101100,
-    _7100mV = 0b0101101,
-    _7200mV = 0b0101110,
-    _7300mV = 0b0101111,
-    _7400mV = 0b0110000,
-    _7500mV = 0b0110001,
-    _7600mV = 0b0110010,
-    _7700mV = 0b0110011,
-    _7800mV = 0b0110100,
-    _7900mV = 0b0110101,
-    _8000mV = 0b0110110,
-    _8100mV = 0b0110111,
-    _8200mV = 0b0111000,
-    _8300mV = 0b0111001,
-    _8400mV = 0b0111010,
-    _8500mV = 0b0111011,
-    _8600mV = 0b0111100,
-    _8700mV = 0b0111101,
-    _8800mV = 0b0111110,
-    _8900mV = 0b0111111,
-    _9000mV = 0b1000000,
-    _9100mV = 0b1000001,
-    _9200mV = 0b1000010,
-    _9300mV = 0b1000011,
-    _9400mV = 0b1000100,
-    _9500mV = 0b1000101,
-    _9600mV = 0b1000110,
-    _9700mV = 0b1000111,
-    _9800mV = 0b1001000,
-    _9900mV = 0b1001001,
-    _10000mV = 0b1001010,
-    _10100mV = 0b1001011,
-    _10200mV = 0b1001100,
-    _10300mV = 0b1001101,
-    _10400mV = 0b1001110,
-    _10500mV = 0b1001111,
-    _10600mV = 0b1010000,
-    _10700mV = 0b1010001,
-    _10800mV = 0b1010010,
-    _10900mV = 0b1010011,
-    _11000mV = 0b1010100,
-    _11100mV = 0b1010101,
-    _11200mV = 0b1010110,
-    _11300mV = 0b1010111,
-    _11400mV = 0b1011000,
-    _11500mV = 0b1011001,
-    _11600mV = 0b1011010,
-    _11700mV = 0b1011011,
-    _11800mV = 0b1011100,
-    _11900mV = 0b1011101,
-    _12000mV = 0b1011110,
-    _12100mV = 0b1011111,
-    _12200mV = 0b1100000,
-    _12300mV = 0b1100001,
-    _12400mV = 0b1100010,
-    _12500mV = 0b1100011,
-    _12600mV = 0b1100100,
-    _12700mV = 0b1100101,
-    _12800mV = 0b1100110,
-    _12900mV = 0b1100111,
-    _13000mV = 0b1101000,
-    _13100mV = 0b1101001,
-    _13200mV = 0b1101010,
-    _13300mV = 0b1101011,
-    _13400mV = 0b1101100,
-    _13500mV = 0b1101101,
-    _13600mV = 0b1101110,
-    _13700mV = 0b1101111,
-    _13800mV = 0b1110000,
-    _13900mV = 0b1110001,
-    _14000mV = 0b1110010,
-    _14100mV = 0b1110011,
-    _14200mV = 0b1110100,
-    _14300mV = 0b1110101,
-    _14400mV = 0b1110110,
-    _14500mV = 0b1110111,
-    _14600mV = 0b1111000,
-    _14700mV = 0b1111001,
-    _14800mV = 0b1111010,
-    _14900mV = 0b1111011,
-    _15000mV = 0b1111100,
-    _15100mV = 0b1111101,
-    _15200mV = 0b1111110,
-    _15300mV = 0b1111111,
-}
+integer_type!(VbusVoltage, 2600, 15300, 100);
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum ChargeCurrent {
-    _0mA = 0b0000000,
-    _50mA = 0b0000001,
-    _100mA = 0b0000010,
-    _150mA = 0b0000011,
-    _200mA = 0b0000100,
-    _250mA = 0b0000101,
-    _300mA = 0b0000110,
-    _350mA = 0b0000111,
-    _400mA = 0b0001000,
-    _450mA = 0b0001001,
-    _500mA = 0b0001010,
-    _550mA = 0b0001011,
-    _600mA = 0b0001100,
-    _650mA = 0b0001101,
-    _700mA = 0b0001110,
-    _750mA = 0b0001111,
-    _800mA = 0b0010000,
-    _850mA = 0b0010001,
-    _900mA = 0b0010010,
-    _950mA = 0b0010011,
-    _1000mA = 0b0010100,
-    _1050mA = 0b0010101,
-    _1100mA = 0b0010110,
-    _1150mA = 0b0010111,
-    _1200mA = 0b0011000,
-    _1250mA = 0b0011001,
-    _1300mA = 0b0011010,
-    _1350mA = 0b0011011,
-    _1400mA = 0b0011100,
-    _1450mA = 0b0011101,
-    _1500mA = 0b0011110,
-    _1550mA = 0b0011111,
-    _1600mA = 0b0100000,
-    _1650mA = 0b0100001,
-    _1700mA = 0b0100010,
-    _1750mA = 0b0100011,
-    _1800mA = 0b0100100,
-    _1850mA = 0b0100101,
-    _1900mA = 0b0100110,
-    _1950mA = 0b0100111,
-    _2000mA = 0b0101000,
-    _2050mA = 0b0101001,
-    _2100mA = 0b0101010,
-    _2150mA = 0b0101011,
-    _2200mA = 0b0101100,
-    _2250mA = 0b0101101,
-    _2300mA = 0b0101110,
-    _2350mA = 0b0101111,
-    _2400mA = 0b0110000,
-    _2450mA = 0b0110001,
-    _2500mA = 0b0110010,
-    _2550mA = 0b0110011,
-    _2600mA = 0b0110100,
-    _2650mA = 0b0110101,
-    _2700mA = 0b0110110,
-    _2750mA = 0b0110111,
-    _2800mA = 0b0111000,
-    _2850mA = 0b0111001,
-    _2900mA = 0b0111010,
-    _2950mA = 0b0111011,
-    _3000mA = 0b0111100,
-    _3050mA = 0b0111101,
-    _3100mA = 0b0111110,
-    _3150mA = 0b0111111,
-    _3200mA = 0b1000000,
-    _3250mA = 0b1000001,
-    _3300mA = 0b1000010,
-    _3350mA = 0b1000011,
-    _3400mA = 0b1000100,
-    _3450mA = 0b1000101,
-    _3500mA = 0b1000110,
-    _3550mA = 0b1000111,
-    _3600mA = 0b1001000,
-    _3650mA = 0b1001001,
-    _3700mA = 0b1001010,
-    _3750mA = 0b1001011,
-    _3800mA = 0b1001100,
-    _3850mA = 0b1001101,
-    _3900mA = 0b1001110,
-    _3950mA = 0b1001111,
-    _4000mA = 0b1010000,
-    _4050mA = 0b1010001,
-    _4100mA = 0b1010010,
-    _4150mA = 0b1010011,
-    _4200mA = 0b1010100,
-    _4250mA = 0b1010101,
-    _4300mA = 0b1010110,
-    _4350mA = 0b1010111,
-    _4400mA = 0b1011000,
-    _4450mA = 0b1011001,
-    _4500mA = 0b1011010,
-    _4550mA = 0b1011011,
-    _4600mA = 0b1011100,
-    _4650mA = 0b1011101,
-    _4700mA = 0b1011110,
-    _4750mA = 0b1011111,
-    _4800mA = 0b1100000,
-    _4850mA = 0b1100001,
-    _4900mA = 0b1100010,
-    _4950mA = 0b1100011,
-    _5000mA = 0b1100100,
-    _5050mA = 0b1100101,
-    _5100mA = 0b1100110,
-    _5150mA = 0b1100111,
-    _5200mA = 0b1101000,
-    _5250mA = 0b1101001,
-    _5300mA = 0b1101010,
-    _5350mA = 0b1101011,
-    _5400mA = 0b1101100,
-    _5450mA = 0b1101101,
-    _5500mA = 0b1101110,
-    _5550mA = 0b1101111,
-    _5600mA = 0b1110000,
-    _5650mA = 0b1110001,
-    _5700mA = 0b1110010,
-    _5750mA = 0b1110011,
-    _5800mA = 0b1110100,
-    _5850mA = 0b1110101,
-    _5900mA = 0b1110110,
-    _5950mA = 0b1110111,
-    _6000mA = 0b1111000,
-    _6050mA = 0b1111001,
-    _6100mA = 0b1111010,
-    _6150mA = 0b1111011,
-    _6200mA = 0b1111100,
-    _6250mA = 0b1111101,
-    _6300mA = 0b1111110,
-    _6350mA = 0b1111111,
-}
+integer_type!(ChargeCurrent, 0, 6350, 50);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
@@ -1485,74 +672,7 @@ pub enum IinDpm {
     Active = 0b1,
 }
 
-#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
-#[repr(u8)]
-pub enum IcoInputCurrentLimit {
-    _100mA = 0b000000,
-    _150mA = 0b000001,
-    _200mA = 0b000010,
-    _250mA = 0b000011,
-    _300mA = 0b000100,
-    _350mA = 0b000101,
-    _400mA = 0b000110,
-    _450mA = 0b000111,
-    _500mA = 0b001000,
-    _550mA = 0b001001,
-    _600mA = 0b001010,
-    _650mA = 0b001011,
-    _700mA = 0b001100,
-    _750mA = 0b001101,
-    _800mA = 0b001110,
-    _850mA = 0b001111,
-    _900mA = 0b010000,
-    _950mA = 0b010001,
-    _1000mA = 0b010010,
-    _1050mA = 0b010011,
-    _1100mA = 0b010100,
-    _1150mA = 0b010101,
-    _1200mA = 0b010110,
-    _1250mA = 0b010111,
-    _1300mA = 0b011000,
-    _1350mA = 0b011001,
-    _1400mA = 0b011010,
-    _1450mA = 0b011011,
-    _1500mA = 0b011100,
-    _1550mA = 0b011101,
-    _1600mA = 0b011110,
-    _1650mA = 0b011111,
-    _1700mA = 0b100000,
-    _1750mA = 0b100001,
-    _1800mA = 0b100010,
-    _1850mA = 0b100011,
-    _1900mA = 0b100100,
-    _1950mA = 0b100101,
-    _2000mA = 0b100110,
-    _2050mA = 0b100111,
-    _2100mA = 0b101000,
-    _2150mA = 0b101001,
-    _2200mA = 0b101010,
-    _2250mA = 0b101011,
-    _2300mA = 0b101100,
-    _2350mA = 0b101101,
-    _2400mA = 0b101110,
-    _2450mA = 0b101111,
-    _2500mA = 0b110000,
-    _2550mA = 0b110001,
-    _2600mA = 0b110010,
-    _2650mA = 0b110011,
-    _2700mA = 0b110100,
-    _2750mA = 0b110101,
-    _2800mA = 0b110110,
-    _2850mA = 0b110111,
-    _2900mA = 0b111000,
-    _2950mA = 0b111001,
-    _3000mA = 0b111010,
-    _3050mA = 0b111011,
-    _3100mA = 0b111100,
-    _3150mA = 0b111101,
-    _3200mA = 0b111110,
-    _3250mA = 0b111111,
-}
+integer_type!(IcoInputCurrentLimit, 100, 3250, 50);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]

@@ -17,16 +17,10 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@v22
 
       - name: Clippy
-        run: |
-          set -x
-          nix develop --command cargo clippy -- -Dwarnings
+        run: nix develop --command cargo clippy -- -Dwarnings
 
       - name: Tests
-        run: |
-          set -x
-          nix develop --command cargo test
+        run: nix develop --command cargo test
 
       - name: Build
-        run: |
-          set -x
-          nix develop --command cargo build
+        run: nix develop --command cargo build
