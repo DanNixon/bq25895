@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2](https://github.com/DanNixon/bq25895/compare/v0.0.1...v0.0.2) - 2026-06-14
+
+### Added
+
+- [**breaking**] use newtypes for number type handling
+
+### Other
+
+- *(docs)* add badges to README ([#1](https://github.com/DanNixon/bq25895/pull/1))
+
 ## [0.0.1](https://github.com/DanNixon/bq25895/releases/tag/v0.0.1) - 2026-06-13
 
 ### Added
