@@ -9,7 +9,7 @@ readme = "README.md"
 description = "Embedded Rust driver for the BQ25895 battery charge controller."
 
 [dependencies]
-defmt = "1.1.0"
+defmt = "1.0.0"
 device-driver = { version = "1.0.9", default-features = false, features = ["dsl"] }
 embedded-hal = "1.0.0"
 embedded-hal-async = "1.0.0"
