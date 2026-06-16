@@ -75,7 +75,7 @@ integer_type!(InputVoltageLimitOffset, 0, 3100, 100);
 #[repr(u8)]
 pub enum AdcConversionRate {
     Oneshot = 0b0,
-    Continuout = 0b1,
+    Continuous = 0b1,
 }
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
