@@ -23,9 +23,13 @@ where
         _size_bits: u32,
         data: &[u8],
     ) -> Result<(), Self::Error> {
-        self.bus.write(self.address, &[address])?;
-        self.bus.write(self.address, data)?;
-        Ok(())
+        self.bus.transaction(
+            self.address,
+            &mut [
+                embedded_hal::i2c::Operation::Write(&[address]),
+                embedded_hal::i2c::Operation::Write(data),
+            ],
+        )
     }
 
     fn read_register(
@@ -52,9 +56,15 @@ where
         _size_bits: u32,
         data: &[u8],
     ) -> Result<(), Self::Error> {
-        self.bus.write(self.address, &[address]).await?;
-        self.bus.write(self.address, data).await?;
-        Ok(())
+        self.bus
+            .transaction(
+                self.address,
+                &mut [
+                    embedded_hal_async::i2c::Operation::Write(&[address]),
+                    embedded_hal_async::i2c::Operation::Write(data),
+                ],
+            )
+            .await
     }
 
     async fn read_register(
