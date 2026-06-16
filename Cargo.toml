@@ -1,6 +1,6 @@
 [package]
 name = "bq25895"
-version = "0.0.3"
+version = "0.0.4"
 license = "MIT"
 edition = "2024"
 homepage = "https://github.com/DanNixon/bq25895"
