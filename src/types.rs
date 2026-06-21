@@ -73,6 +73,13 @@ integer_type!(InputVoltageLimitOffset, 0, 3100, 100);
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
+pub enum AdcConversionControl {
+    Inactive = 0b0,
+    Started = 0b1,
+}
+
+#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
+#[repr(u8)]
 pub enum AdcConversionRate {
     Oneshot = 0b0,
     Continuous = 0b1,
@@ -673,6 +680,13 @@ pub enum IinDpm {
 }
 
 integer_type!(IcoInputCurrentLimit, 100, 3250, 50);
+
+#[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
+#[repr(u8)]
+pub enum RegisterReset {
+    Normal = 0b0,
+    Reset = 0b1,
+}
 
 #[derive(Debug, Format, Copy, Clone, PartialEq, Eq, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]

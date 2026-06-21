@@ -32,6 +32,7 @@ device_driver::create_device!(
             const ADDRESS = 0x02;
             const SIZE_BITS = 8;
 
+            conv_start: RW uint as try crate::AdcConversionControl = 7..=7,
             conv_rate: RW uint as try crate::AdcConversionRate = 6..=6,
             boost_freq: RW uint as try crate::BoostModeFrequency = 5..=5,
             ico_en: RW uint as try crate::InputCurrentOptimizer = 4..=4,
@@ -210,10 +211,11 @@ device_driver::create_device!(
         },
 
         register REG14 {
-            type Access = RO;
+            type Access = RW;
             const ADDRESS = 0x14;
             const SIZE_BITS = 8;
 
+            reg_reset: RW uint as try crate::RegisterReset = 7..=7,
             ico_optimized: RO uint as try crate::InputCurrentOptimizerStatus = 6..=6,
             pn: RO uint = 3..=5,
             ts_profile: RO uint = 2..=2,
